@@ -326,13 +326,13 @@ if __name__ == '__main__':
 There is also another variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 ```
 [target_dir]_
-                  |___[gunshot]
-                  |                    |__foo.wav
-                  |                    |__bar.wav
-                  |
-                  |___[explosion]
-                                         |__baz.wav
-                                         |__xyz.wav
+             |___[gunshot]
+             |            |__foo.wav
+             |            |__bar.wav
+             |
+             |___[explosion]
+                          |__baz.wav
+                          |__xyz.wav
 
 ```
 To do this, the command line changes slightly:
