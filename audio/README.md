@@ -323,7 +323,7 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 ```
-There is also another variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
+There is also a variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 ```
 [target_dir]_
              |___[gunshot]
