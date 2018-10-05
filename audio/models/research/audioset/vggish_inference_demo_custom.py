@@ -111,11 +111,11 @@ def embedding(wav, tf_record_filename, labels_filename):
         label = 0
     else:
         sub_name = wav.split('/')[-2]
-        print("SUB_NAME: " + sub_name)
+        #print("SUB_NAME: " + sub_name)
         csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
         for row in csv_file:
             if sub_name.title() in row[2]:
-                print(row)
+                #print(row)
                 label = int(row[0])
 
     ############################################################################################
@@ -205,52 +205,52 @@ def main(_):
         labels_filename = FLAGS.labels_file
         embedding(wav_file, tf_recordfile, labels_filename)
 
-  elif FLAGS.target_directory:
+  elif FLAGS.target_directory and not FLAGS.subdirectory:
       #check to see if tf_directory is provided. If not, raise Exception.
       if FLAGS.tfrecord_file:
           raise ValueError('If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
       if FLAGS.tf_directory:
           target_directory = FLAGS.target_directory
-          print("TARGET DIRECTORY: " + target_directory)
+          #print("TARGET DIRECTORY: " + target_directory)
           tf_directory = FLAGS.tf_directory
-          print("TF RECORD DIRECTORY: " + tf_directory)
+          #print("TF RECORD DIRECTORY: " + tf_directory)
           labels_filename = FLAGS.labels_file
           #Iterate through each subdirectory
           subdirectories = []
           for dirs in os.walk(target_directory):
               subdirectories.append(dirs[0])
               for sub in subdirectories[1:]:
-                print("SUBDIRECTORY: " + sub)
+                #print("SUBDIRECTORY: " + sub)
                 #Iterate through each file in subdirectory
                 for filename in os.listdir(sub):
                  if filename.endswith(".wav"):
-                     print("FILENAME: " + filename)
+                     #print("FILENAME: " + filename)
                      subdirectory_name = sub.rsplit('/',1)[-1]
                      wav_filename = filename.rsplit('.',1)[0]
                      tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
-                     print("TF_RECORD_FILENAME: " + tf_recordfile)
+                     #print("TF_RECORD_FILENAME: " + tf_recordfile)
                      embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile, labels_filename)
                      continue
                  else:
                      continue
 
-  elif FLAGS.subdirectory:
+  elif FLAGS.subdirectory and not FLAGS.target_directory:
       #check to see if target_directory or subdirectory or tf_directory were used. If so, raise Exception.
       if FLAGS.tfrecord_file:
           raise ValueError('If specifying the --subdirectory argument, be sure to also include the --tf_directory argument')
       if FLAGS.tf_directory:
         subdirectory = FLAGS.subdirectory
-        print("SUBDIRECTORY: " + subdirectory)
+        #print("SUBDIRECTORY: " + subdirectory)
         labels_filename = FLAGS.labels_file
         for filename in os.listdir(subdirectory):
             if filename.endswith(".wav"):
-                print("FILENAME: " + filename)
+                #print("FILENAME: " + filename)
                 tf_directory = FLAGS.tf_directory
-                print("TF RECORD DIRECTORY: " + tf_directory)
+                #print("TF RECORD DIRECTORY: " + tf_directory)
                 subdirectory_name = subdirectory.rsplit('/',1)[-1]
                 wav_filename = filename.rsplit('.',1)[0]
                 tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
-                print("TF_RECORD_FILENAME: " + tf_recordfile)
+                #print("TF_RECORD_FILENAME: " + tf_recordfile)
                 embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
                 continue
             else:
@@ -259,10 +259,23 @@ def main(_):
   elif FLAGS.target_directory and FLAGS.subdirectory:
     target_directory = FLAGS.target_directory
     subdirectory = FLAGS.subdirectory 
+    labels_filename = FLAGS.labels_file
+    for filename in os.listdir(subdirectory):
+        if filename.endswith(".wav"):
+            #print("FILENAME: " + filename)
+            tf_directory = FLAGS.tf_directory
+            #print("TF RECORD DIRECTORY: " + tf_directory)
+            subdirectory_name = subdirectory.rsplit('/',1)[-1]
+            wav_filename = filename.rsplit('.',1)[0]
+            tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
+            #print("TF_RECORD_FILENAME: " + tf_recordfile)
+            embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
+            continue
+        else:
+            continue 
     
   else:
     # Write a WAV of a sine wav into an in-memory file object.
-
     num_secs = 5
     freq = 1000
     sr = 44100
