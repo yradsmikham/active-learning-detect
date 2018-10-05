@@ -155,7 +155,7 @@ Required Input
 
 ## VGG Conversion Tester
 
-Use vggish_inference_demo.py to create a VGG analysis of your custom wave file in a tensor flow record. Specify the path to the wav file  and the output path of where you want the tfrecord to be generated.
+Use vggish_inference_demo.py to create a VGG analysis of your custom wave file in a tensor flow record. Specify the path to the wav file and the output path of where you want the tfrecord to be generated.
 
 `python vggish_inference_demo.py --wav_file clip2-02_16bit_PCM_signed_smallendian.wav \
                                     --tfrecord_file tfrecrods/new2 \
@@ -323,7 +323,27 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 ```
+There is also another variation of vggish_inference_demo.py (vggish_inference_demo_custom.py) that supports the capability of inputting a directory of subdirectories that contain multiple wav files, and converting them all to tensor flow records. For example:
 
+[target_dir]_
+                  |___[gunshot]
+                  |                    |__foo.wav
+                  |                    |__bar.wav
+                  |
+                  |___[explosion]
+                                         |__baz.wav
+                                         |__xyz.wav
+
+
+To do this, the command line changes slightly:
+
+`python vggish_inference_demo_custom.py --target_directory /path/to/wav/files \
+                                    --tf_directory /path/to/tfrecords \
+                                    --checkpoint /path/to/model/checkpoint \
+                                    --pca_params /path/to/pca/params
+				    --labels_file /path/to/labels/csv/file \`
+ 
+When using the --target_directory argument, the --tf_directory argument also needs to be specified. You can specify the --subdirectory arugment, which also requires the --tf_directory argument. When using this script, the path of the csv file that contains the class labels indices is required using the --labels-file argument.
 
 ## Selection of model:
 
