@@ -343,7 +343,7 @@ To do this, the command line changes slightly:
                                     --pca_params /path/to/pca/params
 				    --labels_file /path/to/labels/csv/file \`
  
-When using the --target_directory argument, the --tf_directory argument also needs to be specified. You can specify the --subdirectory arugment, which also requires the --tf_directory argument. When using this script, the path of the csv file that contains the class labels indices is required using the --labels-file argument.
+When using the --target_directory argument, the --tf_directory argument needs to be specified. You can specify the --subdirectory arugment, which also requires --tf_directory. When using this script, the path of the csv file that contains the class labels indices is required using the --labels-file flag.
 
 ## Selection of model:
 
