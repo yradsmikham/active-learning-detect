@@ -13,8 +13,6 @@ def wav_length(fname):
 # take in wav file and calculate duration, n
 fname = sys.argv[1]
 n = wav_length(fname)
-#print("Length of wav file: " + str(n) + "seconds")
-#float(n)
 
 # generate wav file that covers duration, 10-n
 n_milli = n * 1000 # convert n to milliseconds 
@@ -22,8 +20,6 @@ duration_whitenoise = 10000 - n_milli
 wn = AudioSegment.silent(duration=duration_whitenoise) 
 wn.export(fname+"_whitenoise.wav",format="wav", parameters=["-ar", "16000"])
 wn_length = wav_length(fname+"_whitenoise.wav")
-#print("Length of white noise wav file: " + str(wn_length) + "seconds")
-#float(wn_length)
 
 # join the wav files
 padded_fname = fname.split('.')[-2]
