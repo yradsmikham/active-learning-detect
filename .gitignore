@@ -1,3 +1,7 @@
+audio/wav/
+audio/tfrecord/
+audio/output/
+
 *tfevents*
 *weights*/
 # Byte-compiled / optimized / DLL files
