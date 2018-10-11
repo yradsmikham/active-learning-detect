@@ -4,6 +4,7 @@ import sys
 import os
 import math
 import numpy as np
+import shutil
 
 def wav_length(fname):
     wav = wave.open(fname,'r')
@@ -31,27 +32,33 @@ def sliding_window(fname, duration):
 def white_noise_generator(wav, white_noise_duration):
     for x in white_noise_duration:
         if x == 0:
+            wav_files = []
+            padded_fname = wav.split('.')[-2]
             wn_duration = max(white_noise_duration)
+
             # white noise duration should be a list e.g [0,1]
             # generate white noise wav file
             wn = AudioSegment.silent(duration=wn_duration * 1000) 
             wn.export(wav+"_whitenoise.wav",format="wav", parameters=["-ar", "16000"])
 
             # stitch white noise wav file to specific audio wav file
-            #before
-            padded_fname = wav.split('.')[-2]
-            new_wav = AudioSegment.from_wav(wav+"_whitenoise.wav") + AudioSegment.from_wav(wav)
-            new_wav.export(padded_fname+"_padded.wav", format="wav", parameters=["-ar", "16000"])
+            # before
+            new_wav_before = AudioSegment.from_wav(wav+"_whitenoise.wav") + AudioSegment.from_wav(wav)
+            new_wav_before.export(padded_fname+"_padded"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav", format="wav", parameters=["-ar", "16000"])
 
-            #after
-            padded_fname = wav.split('.')[-2]
-            new_wav = AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise.wav")
-            new_wav.export(padded_fname+"_padded2.wav", format="wav", parameters=["-ar", "16000"])
+            # after
+            new_wav_after = AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise.wav")
+            new_wav_after.export(padded_fname+"_padded"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav", format="wav", parameters=["-ar", "16000"])
 
             # remove white noise wav file
             os.remove(wav+"_whitenoise.wav")
+            wav_files.append(padded_fname+"_padded"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav")
+            wav_files.append(padded_fname+"_padded"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav")
             break
         else:
+            wav_files = []
+            padded_fname = wav.split('.')[-2]
+
             # white noise duration should be a list e.g [0,1]
             # generate white noise wav file
             wn_0 = AudioSegment.silent(duration=white_noise_duration[0] * 1000) 
@@ -61,16 +68,26 @@ def white_noise_generator(wav, white_noise_duration):
             wn_1.export(wav+"_whitenoise_1.wav",format="wav", parameters=["-ar", "16000"])
 
             # stitch white noise wav file to specific audio wav file
-            padded_fname = wav.split('.')[-2]
-            new_wav = AudioSegment.from_wav(wav+"_whitenoise_1.wav") + AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise_1.wav")
-            new_wav.export(padded_fname+"_padded.wav", format="wav", parameters=["-ar", "16000"])
+            new_wav = AudioSegment.from_wav(wav+"_whitenoise_0.wav") + AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise_1.wav")
+            new_wav.export(padded_fname+"_padded.wav"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav", format="wav", parameters=["-ar", "16000"])
+
+            # after
+            new_wav_reverse = AudioSegment.from_wav(wav+"_whitenoise_1.wav") + AudioSegment.from_wav(wav) + AudioSegment.from_wav(wav+"_whitenoise_0.wav")
+            new_wav_reverse.export(padded_fname+"_padded"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav", format="wav", parameters=["-ar", "16000"])
 
             # remove white noise wav file
             os.remove(wav+"_whitenoise_0.wav")
             os.remove(wav+"_whitenoise_1.wav")
+            
+            wav_files.append(padded_fname+"_padded.wav"+"_"+str(white_noise_duration[0])+"_"+str(white_noise_duration[1])+".wav")
+            wav_files.append(padded_fname+"_padded.wav"+"_"+str(white_noise_duration[1])+"_"+str(white_noise_duration[0])+".wav")
+            break
+    return wav_files
 
-            return(padded_fname+"_padded.wav")
-    return(padded_fname+"_padded.wav")
+# make directory for output files
+newpath = r'output' 
+if not os.path.exists(newpath):
+    os.makedirs(newpath)
 
 # take in wav file and calculate duration, n
 fname = sys.argv[1]
@@ -85,14 +102,19 @@ print("White Noise Remainder: " + str(wn_remain) + " seconds")
 float(wn_remain)
 
 # pad audio file
-rounded_wav = white_noise_generator(sys.argv[1], [0,wn_remain])
+rounded_wav = white_noise_generator(sys.argv[1], [0, wn_remain])
 print(rounded_wav)
-rounded_wav_length = wav_length(rounded_wav)
-print("Length of rounded wav file: " + str(rounded_wav_length) + " seconds")
-float(rounded_wav_length)
+rounded_wav_length_0 = wav_length(rounded_wav[0])
+print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
+float(rounded_wav_length_0)
+
+rounded_wav_length_1 = wav_length(rounded_wav[1])
+print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")
+float(rounded_wav_length_1)
+
 
 # determine all combinations of a + b = remainder
-remainder = 10 - round(rounded_wav_length)
+remainder = 10 - round(rounded_wav_length_1)
 print("Remainder value: " + str(remainder))
 int(remainder)
 lst = list(range(0, 10))
@@ -103,25 +125,22 @@ for i in comb:
         comb_new.append(i)
 print(comb_new)
 
+# rename padded wav file
+# copy padded wav file in output folder as new file
+folder_name = (rounded_wav[1].split("_")[0]).split("/")[-1]
+path = "output/"+folder_name
+if not os.path.exists(path): 
+    os.mkdir(path)
+
+shutil.copy(rounded_wav[1], path)
+destination = path+"/"+ folder_name+".wav"
+os.rename(path+"/"+rounded_wav[1].split("/")[-1], destination)
+
 for combination in comb_new:
     # 10 second padding
-    print("hey!")
-    #sliding_window(rounded_wav, combination)
+    print("Creating padded wav files...")
+    white_noise_generator(destination,combination)
 
-# generate wav file that covers duration, 10-n
-# n_milli = n * 1000 # convert n to milliseconds 
-# duration_whitenoise = 10000 - n_milli
-# wn = AudioSegment.silent(duration=duration_whitenoise) 
-# wn.export(fname+"_whitenoise.wav",format="wav", parameters=["-ar", "16000"])
-# wn_length = wav_length(fname+"_whitenoise.wav")
-# print("Length of white noise wav file: " + str(wn_length) + " seconds")
-# float(wn_length)
-
-# # join the wav files
-# padded_fname = fname.split('.')[-2]
-# new_wav = AudioSegment.from_wav(sys.argv[1]) + AudioSegment.from_wav(fname+"_whitenoise.wav")
-# new_wav.export(padded_fname+"_padded.wav", format="wav", parameters=["-ar", "16000"])
-
-# # remove white noise wav file
-# fname+"_whitenoise.wav"
-# os.remove(fname+"_whitenoise.wav")
+# remove in wav folder
+for file in rounded_wav:
+    os.remove(file)
