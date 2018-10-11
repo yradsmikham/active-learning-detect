@@ -1,5 +1,5 @@
 /audio/wav/
-/audio/tfrecords/
+/audio/tfrecord/
 /audio/output/
 
 *.csv
