@@ -115,6 +115,6 @@ models/*.h5
 
 .DS_Store
 
-wav/
-tfrecord/
-output/
+/wav/
+/tfrecord/
+/output/

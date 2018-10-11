@@ -1,6 +1,6 @@
-audio/wav/
-audio/tfrecord/
-audio/output/
+/Users/yvonneradsmikham/Microsoft/active-learning-detect/audio/wav
+!audio/tfrecord/
+!audio/output/
 
 *tfevents*
 *weights*/
