@@ -22,14 +22,7 @@ def combinations(lst, target, with_replacement=False):
         return r
     return _a(0, [], [], target, with_replacement)
 
-def sliding_window(fname, duration):
-    # padding
-    print("padding")
-
-    # padding reverse
-    print("reverse padding")
-
-def white_noise_generator(wav, white_noise_duration):
+def padding(wav, white_noise_duration):
     for x in white_noise_duration:
         if x == 0:
             wav_files = []
@@ -92,30 +85,30 @@ if not os.path.exists(newpath):
 # take in wav file and calculate duration, n
 fname = sys.argv[1]
 n = wav_length(fname)
-print("Length of wav file: " + str(n) + " seconds")
+print("length of wav file: " + str(n) + " seconds")
 float(n)
 
 # round the wav up to the nearest integer
 integ = math.ceil(n)
 wn_remain = integ - n
-print("White Noise Remainder: " + str(wn_remain) + " seconds")
+#print("white noise remainder: " + str(wn_remain) + " seconds")
 float(wn_remain)
 
 # pad audio file
-rounded_wav = white_noise_generator(sys.argv[1], [0, wn_remain])
-print(rounded_wav)
+rounded_wav = padding(sys.argv[1], [0, wn_remain])
+#print(rounded_wav)
 rounded_wav_length_0 = wav_length(rounded_wav[0])
-print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
-float(rounded_wav_length_0)
+#print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
+#float(rounded_wav_length_0)
 
 rounded_wav_length_1 = wav_length(rounded_wav[1])
-print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")
-float(rounded_wav_length_1)
+#print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")
+#float(rounded_wav_length_1)
 
 
 # determine all combinations of a + b = remainder
 remainder = 10 - round(rounded_wav_length_1)
-print("Remainder value: " + str(remainder))
+#print("remainder value: " + str(remainder))
 int(remainder)
 lst = list(range(0, 10))
 comb = combinations(lst, remainder)
@@ -123,7 +116,7 @@ comb_new = []
 for i in comb:
     if len(i) == 2:
         comb_new.append(i)
-print(comb_new)
+#print(comb_new)
 
 # rename padded wav file
 # copy padded wav file in output folder as new file
@@ -138,8 +131,7 @@ os.rename(path+"/"+rounded_wav[1].split("/")[-1], destination)
 
 for combination in comb_new:
     # 10 second padding
-    print("Creating padded wav files...")
-    white_noise_generator(destination,combination)
+    padding(destination,combination)
 
 # remove in wav folder
 for file in rounded_wav:
