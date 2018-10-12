@@ -91,7 +91,7 @@ float(n)
 # round the wav up to the nearest integer
 integ = math.ceil(n)
 wn_remain = integ - n
-#print("white noise remainder: " + str(wn_remain) + " seconds")
+print("white noise remainder: " + str(wn_remain) + " seconds")
 float(wn_remain)
 
 # pad audio file

@@ -58,6 +58,7 @@ import vggish_slim
 import os
 import csv
 import sys 
+from collections import deque
 
 flags = tf.app.flags
 
@@ -97,6 +98,14 @@ flags.DEFINE_string(
 
 FLAGS = flags.FLAGS
 
+def get_last_row(csv_filename):
+    with open(csv_filename, 'r') as f:
+        try:
+            lastrow = deque(csv.reader(f), 1)[0]
+        except IndexError:  # empty file
+            lastrow = None
+        return lastrow
+
 def embedding(wav, tf_record_filename, labels_filename):
 
     # WAV Filename
@@ -107,16 +116,25 @@ def embedding(wav, tf_record_filename, labels_filename):
         wav_filename = wav
 
     # Acquiring Label ID
-    if labels_filename == "no_labels_file":
-        label = 0
-    else:
+    if labels_filename:
         sub_name = wav.split('/')[-2]
         #print("SUB_NAME: " + sub_name)
         csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
         for row in csv_file:
             if sub_name.title() in row[2]:
-                #print(row)
+                print(row)
                 label = int(row[0])
+                break
+
+    # Need to append to csv file if label is STILL 0
+    if label == 0:
+        print("Label is still 0. Will append new entry in labels CSV file.")
+        last_row = get_last_row(labels_filename)
+        description= "test"
+        row = [int(last_row[0])+1, '/m/t3st/', description.title()]     
+        with open(labels_filename,'a') as fd:
+            writer=csv.writer(fd)
+            writer.writerow(row)
 
     ############################################################################################
     batch = vggish_input.wavfile_to_examples(wav)
@@ -227,7 +245,7 @@ def main(_):
                      #print("FILENAME: " + filename)
                      subdirectory_name = sub.rsplit('/',1)[-1]
                      wav_filename = filename.rsplit('.',1)[0]
-                     tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
+                     tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
                      #print("TF_RECORD_FILENAME: " + tf_recordfile)
                      embedding(target_directory + "/" + subdirectory_name + "/" + filename, tf_recordfile, labels_filename)
                      continue
@@ -249,7 +267,7 @@ def main(_):
                 #print("TF RECORD DIRECTORY: " + tf_directory)
                 subdirectory_name = subdirectory.rsplit('/',1)[-1]
                 wav_filename = filename.rsplit('.',1)[0]
-                tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
+                tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
                 #print("TF_RECORD_FILENAME: " + tf_recordfile)
                 embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
                 continue
@@ -267,7 +285,7 @@ def main(_):
             #print("TF RECORD DIRECTORY: " + tf_directory)
             subdirectory_name = subdirectory.rsplit('/',1)[-1]
             wav_filename = filename.rsplit('.',1)[0]
-            tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename
+            tf_recordfile = tf_directory + "/" + subdirectory_name + "_" + wav_filename + ".tfrecord"
             #print("TF_RECORD_FILENAME: " + tf_recordfile)
             embedding(subdirectory + "/" + filename, tf_recordfile, labels_filename)
             continue
