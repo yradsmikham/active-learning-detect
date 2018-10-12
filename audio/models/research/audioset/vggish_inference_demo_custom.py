@@ -107,6 +107,10 @@ def get_last_row(csv_filename):
         return lastrow
 
 def embedding(wav, tf_record_filename, labels_filename):
+    
+    # name of subdirectory
+    sub_name = wav.split('/')[-2]
+    print("SUB_NAME: " + sub_name)
 
     # WAV Filename
     if type(wav) == str:
@@ -117,8 +121,6 @@ def embedding(wav, tf_record_filename, labels_filename):
 
     # Acquiring Label ID
     if labels_filename:
-        sub_name = wav.split('/')[-2]
-        #print("SUB_NAME: " + sub_name)
         csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
         for row in csv_file:
             if sub_name.title() in row[2]:
@@ -130,8 +132,7 @@ def embedding(wav, tf_record_filename, labels_filename):
     if label == 0:
         print("Label is still 0. Will append new entry in labels CSV file.")
         last_row = get_last_row(labels_filename)
-        description= "test"
-        row = [int(last_row[0])+1, '/m/t3st/', description.title()]     
+        row = [int(last_row[0])+1, '/m/t3st/', sub_name.title()]     
         with open(labels_filename,'a') as fd:
             writer=csv.writer(fd)
             writer.writerow(row)
@@ -167,9 +168,9 @@ def embedding(wav, tf_record_filename, labels_filename):
         # Run inference and postprocessing.
         [embedding_batch] = sess.run([embedding_tensor],
                                     feed_dict={features_tensor: batch})
-        print(embedding_batch)
+        #print(embedding_batch)
         postprocessed_batch = pproc.postprocess(embedding_batch)
-        print(postprocessed_batch)
+        #print(postprocessed_batch)
 
         # Write the postprocessed embeddings as a SequenceExample, in a similar
         # format as the features released in AudioSet. Each row of the batch of
