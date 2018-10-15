@@ -5,6 +5,7 @@ import os
 import math
 import numpy as np
 import shutil
+from pydub.generators import WhiteNoise 
 
 def wav_length(fname):
     wav = wave.open(fname,'r')
@@ -27,11 +28,12 @@ def padding(wav, white_noise_duration):
         if x == 0:
             wav_files = []
             padded_fname = wav.split('.')[-2]
-            wn_duration = max(white_noise_duration)
+            silence_duration = max(white_noise_duration)
 
             # white noise duration should be a list e.g [0,1]
             # generate white noise wav file
-            wn = AudioSegment.silent(duration=wn_duration * 1000) 
+            wn = AudioSegment.silent(duration=silence_duration * 1000) 
+            #wn = WhiteNoise().to_audio_segment(duration=silence_duration * 1000)
             wn.export(wav+"_whitenoise.wav",format="wav", parameters=["-ar", "16000"])
 
             # stitch white noise wav file to specific audio wav file
@@ -55,9 +57,11 @@ def padding(wav, white_noise_duration):
             # white noise duration should be a list e.g [0,1]
             # generate white noise wav file
             wn_0 = AudioSegment.silent(duration=white_noise_duration[0] * 1000) 
+            #wn_0 = WhiteNoise().to_audio_segment(duration=duration=white_noise_duration[0] * 1000)
             wn_0.export(wav+"_whitenoise_0.wav",format="wav", parameters=["-ar", "16000"])
 
             wn_1 = AudioSegment.silent(duration=white_noise_duration[1] * 1000) 
+            #wn_1 = WhiteNoise().to_audio_segment(duration=white_noise_duration[1] * 1000)
             wn_1.export(wav+"_whitenoise_1.wav",format="wav", parameters=["-ar", "16000"])
 
             # stitch white noise wav file to specific audio wav file
@@ -90,49 +94,72 @@ float(n)
 
 # round the wav up to the nearest integer
 integ = math.ceil(n)
-wn_remain = integ - n
-print("white noise remainder: " + str(wn_remain) + " seconds")
-float(wn_remain)
+silence_remain = integ - n
+print("white noise remainder: " + str(silence_remain) + " seconds")
+float(silence_remain)
 
-# pad audio file
-rounded_wav = padding(sys.argv[1], [0, wn_remain])
-#print(rounded_wav)
-rounded_wav_length_0 = wav_length(rounded_wav[0])
-#print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
-#float(rounded_wav_length_0)
+if silence_remain == 0:
+    remainder = 10 - round(n)
+    int(remainder)
+    lst = list(range(0, 10))
+    comb = combinations(lst, remainder)
+    comb_new = []
+    for i in comb:
+        if len(i) == 2:
+            comb_new.append(i)
+    #print(fname)
+    folder_name = (fname.split("/")[-1]).split(".")[0]
+    #print(folder_name)
+    path = "output/"+folder_name
+    if not os.path.exists(path): 
+        os.mkdir(path)
 
-rounded_wav_length_1 = wav_length(rounded_wav[1])
-#print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")
-#float(rounded_wav_length_1)
+    shutil.copy(fname, path)
+    destination = path+"/"+ folder_name+".wav"
+    os.rename(path+"/"+fname.split("/")[-1], destination)
 
+    for combination in comb_new:
+        # 10 second padding
+        padding(destination,combination)
+else: 
+    # pad audio file
+    rounded_wav = padding(sys.argv[1], [0, silence_remain])
+    #print(rounded_wav)
+    rounded_wav_length_0 = wav_length(rounded_wav[0])
+    #print("Length of rounded wav file: " + str(rounded_wav_length_0) + " seconds")
+    #float(rounded_wav_length_0)
 
-# determine all combinations of a + b = remainder
-remainder = 10 - round(rounded_wav_length_1)
-#print("remainder value: " + str(remainder))
-int(remainder)
-lst = list(range(0, 10))
-comb = combinations(lst, remainder)
-comb_new = []
-for i in comb:
-    if len(i) == 2:
-        comb_new.append(i)
-#print(comb_new)
+    rounded_wav_length_1 = wav_length(rounded_wav[1])
+    #print("Length of rounded wav file: " + str(rounded_wav_length_1) + " seconds")
+    #float(rounded_wav_length_1)
 
-# rename padded wav file
-# copy padded wav file in output folder as new file
-folder_name = (rounded_wav[1].split("_")[0]).split("/")[-1]
-path = "output/"+folder_name
-if not os.path.exists(path): 
-    os.mkdir(path)
+    # determine all combinations of a + b = remainder
+    remainder = 10 - round(rounded_wav_length_1)
+    #print("remainder value: " + str(remainder))
+    int(remainder)
+    lst = list(range(0, 10))
+    comb = combinations(lst, remainder)
+    comb_new = []
+    for i in comb:
+        if len(i) == 2:
+            comb_new.append(i)
+    #print(comb_new)
 
-shutil.copy(rounded_wav[1], path)
-destination = path+"/"+ folder_name+".wav"
-os.rename(path+"/"+rounded_wav[1].split("/")[-1], destination)
+    # rename padded wav file
+    # copy padded wav file in output folder as new file
+    folder_name = (rounded_wav[1].split("_")[0]).split("/")[-1]
+    path = "output/"+folder_name
+    if not os.path.exists(path): 
+        os.mkdir(path)
 
-for combination in comb_new:
-    # 10 second padding
-    padding(destination,combination)
+    shutil.copy(rounded_wav[1], path)
+    destination = path+"/"+ folder_name+".wav"
+    os.rename(path+"/"+rounded_wav[1].split("/")[-1], destination)
 
-# remove in wav folder
-for file in rounded_wav:
-    os.remove(file)
+    for combination in comb_new:
+        # 10 second padding
+        padding(destination,combination)
+
+    # remove in wav folder
+    for file in rounded_wav:
+        os.remove(file)
