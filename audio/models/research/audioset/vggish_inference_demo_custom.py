@@ -107,7 +107,7 @@ def get_last_row(csv_filename):
         return lastrow
 
 def embedding(wav, tf_record_filename, labels_filename):
-    
+
     # name of subdirectory
     sub_name = wav.split('/')[-2]
     print("SUB_NAME: " + sub_name)
@@ -121,7 +121,7 @@ def embedding(wav, tf_record_filename, labels_filename):
 
     # Acquiring Label ID
     if labels_filename:
-        csv_file = csv.reader(open(labels_filename, "rb"), delimiter=",")
+        csv_file = csv.reader(open(labels_filename, "rt", encoding="utf8"), delimiter=",")
         for row in csv_file:
             if sub_name.title() in row[2]:
                 print(row)
